@@ -29,12 +29,17 @@ async function run() {
 
     const volunteerPostCollection = client.db("volunteerDB").collection("volunteerPosts");
 
+    app.get("/all-posts", async (req, res) => {
+      const result = await volunteerPostCollection.find().toArray();
+      res.send(result);
+    });
 
     app.post("/add-post", async (req, res) => {
       const newPost = req.body;
       const result = await volunteerPostCollection.insertOne(newPost);
       res.send(result);
     });
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
