@@ -47,6 +47,12 @@ async function run() {
       res.send(result);
     });
 
+    // volunteer needs now
+    app.get('/volunteer-needs-now', async(req, res)=>{
+      const result = await volunteerPostCollection.find().sort({deadline: 1}).limit(6).toArray();
+      res.send(result)
+    })
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
