@@ -30,7 +30,14 @@ async function run() {
     const volunteerPostCollection = client.db("volunteerDB").collection("volunteerPosts");
 
     app.get("/all-posts", async (req, res) => {
-      const result = await volunteerPostCollection.find().toArray();
+      const search = req.query.search
+      let query = {
+        title: {
+          $regex: search,
+          $options: 'i',
+        }
+      }
+      const result = await volunteerPostCollection.find(query).toArray();
       res.send(result);
     });
 
