@@ -50,6 +50,14 @@ async function run() {
       const result = await volunteerPostCollection.findOne(query);
       res.send(result);
     });
+
+    app.get("/my-posts", async (req, res) => {
+      const { email } = req.query;
+      const query = { "organizer.organizerEmail": email };
+      const result = await volunteerPostCollection.find(query).toArray();
+      res.send(result);
+    });
+
     app.post("/add-post", async (req, res) => {
       const newPost = req.body;
       const result = await volunteerPostCollection.insertOne(newPost);
