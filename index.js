@@ -65,17 +65,16 @@ async function run() {
       res.send(result);
     });
 
-
-    app.get('/update-my-post/:id', async(req, res)=>{
+    app.get("/update-my-post/:id", async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)}
+      const query = { _id: new ObjectId(id) };
       const result = await volunteerPostCollection.findOne(query);
       res.send(result);
-    })
-    app.put('/update-my-post/:id', async(req, res)=>{
+    });
+    app.put("/update-my-post/:id", async (req, res) => {
       const id = req.params.id;
-      const filter = {_id: new ObjectId(id)};
-      const options = {upsert: true}
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
       const updatedPost = req.body;
       const postData = {
         $set: {
@@ -85,18 +84,56 @@ async function run() {
           category: updatedPost.category,
           location: updatedPost.location,
           volunteersNumber: updatedPost.volunteersNumber,
-          deadline: new Date(updatedPost.deadline)
-        }
-      }
-      const result = await volunteerPostCollection.updateOne(filter, postData, options);
+          deadline: new Date(updatedPost.deadline),
+        },
+      };
+      const result = await volunteerPostCollection.updateOne(
+        filter,
+        postData,
+        options
+      );
       res.send(result);
-    })
+    });
 
     app.delete("/my-post/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await volunteerPostCollection.deleteOne(query);
       res.send(result);
+    });
+
+    app.delete("/my-request-post/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+
+      try {
+        const requestPost = await volunteerRequestsCollection.findOne(query);
+        if (!requestPost) {
+          return res.status(400).send("request post not found");
+        }
+
+        const { postId } = requestPost;
+
+        const result = await volunteerRequestsCollection.deleteOne(query);
+
+        if (result.deletedCount === 1) {
+          const filter = { _id: new ObjectId(postId) };
+          const update = { $inc: { volunteersNumber: 1 } };
+          const updatedVolunteerNumberPost =
+            await volunteerPostCollection.updateOne(filter, update);
+          if (updatedVolunteerNumberPost.modifiedCount === 0) {
+            return res.status(500).send("Failed to update volunteer count.");
+          }
+        }
+
+        res.send(result);
+      } catch (error) {
+        console.log(error.message);
+        res.status(500).send({ error: "Internal server error" });
+      }
+
+      // const result = await volunteerRequestsCollection.deleteOne(query);
+      // res.send(result);
     });
 
     app.post("/add-post", async (req, res) => {
@@ -136,15 +173,10 @@ async function run() {
 
         const filter = { _id: new ObjectId(postId) };
         const update = { $inc: { volunteersNumber: -1 } };
-        const updatedVolunteerNumberPost = await volunteerPostCollection.updateOne(
-          filter,
-          update
-        );
-        const updatedVolunteerNumberRequest = await volunteerRequestsCollection.updateOne(
-          {postId},
-          update
-        );
-
+        const updatedVolunteerNumberPost =
+          await volunteerPostCollection.updateOne(filter, update);
+        const updatedVolunteerNumberRequest =
+          await volunteerRequestsCollection.updateOne({ postId }, update);
 
         if (updatedVolunteerNumberPost.modifiedCount === 0) {
           return res.status(500).send("Failed to update volunteer count.");
