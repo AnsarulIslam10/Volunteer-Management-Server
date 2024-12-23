@@ -58,7 +58,34 @@ async function run() {
       res.send(result);
     });
 
-    app.delete("/my-posts/:id", async (req, res) => {
+
+    app.get('/update-my-post/:id', async(req, res)=>{
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await volunteerPostCollection.findOne(query);
+      res.send(result);
+    })
+    app.put('/update-my-post/:id', async(req, res)=>{
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)};
+      const options = {upsert: true}
+      const updatedPost = req.body;
+      const postData = {
+        $set: {
+          thumbnail: updatedPost.thumbnail,
+          title: updatedPost.title,
+          description: updatedPost.description,
+          category: updatedPost.category,
+          location: updatedPost.location,
+          volunteersNumber: updatedPost.volunteersNumber,
+          deadline: new Date(updatedPost.deadline)
+        }
+      }
+      const result = await volunteerPostCollection.updateOne(filter, postData, options);
+      res.send(result);
+    })
+
+    app.delete("/my-post/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await volunteerPostCollection.deleteOne(query);
