@@ -58,6 +58,13 @@ async function run() {
       res.send(result);
     });
 
+    app.delete("/my-posts/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await volunteerPostCollection.deleteOne(query);
+      res.send(result);
+    });
+
     app.post("/add-post", async (req, res) => {
       const newPost = req.body;
       const result = await volunteerPostCollection.insertOne(newPost);
