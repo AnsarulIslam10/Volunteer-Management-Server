@@ -2,12 +2,21 @@ require("dotenv").config();
 const express = require("express");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
-const jwt = require('jsonwebtoken')
+const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const port = process.env.PORT || 5000;
 
+const corsOptions = {
+  origin: [
+    "http://localhost:5173",
+    "https://volunteer-management-7efa7.web.app",
+  ],
+  credentials: true,
+  optionalSuccessStatus: 200,
+};
+
 // middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.8ggzn.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -33,16 +42,21 @@ async function run() {
       .db("volunteerDB")
       .collection("volunteerRequests");
 
-
     // jwt token generate
-    app.post('/jwt', async(req, res)=>{
+    app.post("/jwt", async (req, res) => {
       const user = req.body;
-      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '7d'})
-      console.log(token)
-      res.send(token)
-    })
-
-
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "7d",
+      });
+      console.log(token);
+      res
+        .cookie("token", token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+        })
+        .send({ success: true });
+    });
 
     app.get("/all-posts", async (req, res) => {
       const search = req.query.search;
