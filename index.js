@@ -58,6 +58,15 @@ async function run() {
         .send({ success: true });
     });
 
+    // logout
+    app.get('/logout', async(req, res)=>{
+      res.clearCookie('token', {
+        maxAge: 0,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      }).send({ success: true });
+    })
+
     app.get("/all-posts", async (req, res) => {
       const search = req.query.search;
       let query = {
