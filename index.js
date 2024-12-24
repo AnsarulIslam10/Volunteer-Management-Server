@@ -217,17 +217,14 @@ async function run() {
       res.send(result);
     });
 
-    app.post("/volunteer-request", verifyToken, async (req, res) => {
+    app.post("/volunteer-request", async (req, res) => {
       const volunteerInfo = req.body;
-      const { email, postId } = volunteerInfo;
-      const decodedEmail = req.user?.email;
-
-      if (decodedEmail !== email) {
-        return res.status(403).send({ message: "Forbidden Access" });
-      }
-
+      console.log("volunter infoo===>", volunteerInfo)
+      const { volunteer, postId } = volunteerInfo;
+      const {volunteerEmail} = volunteer
       try {
-        const query = { email, postId };
+        const query = { "volunteer.volunteerEmail": volunteerEmail, postId };
+        console.log("volunteer? ==>", volunteerEmail, postId)
         const alreadyExist = await volunteerRequestsCollection.findOne(query);
         console.log("If already exist-->", alreadyExist);
 
