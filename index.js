@@ -65,7 +65,6 @@ async function run() {
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "7d",
       });
-      console.log(token);
       res
         .cookie("token", token, {
           httpOnly: true,
@@ -219,14 +218,11 @@ async function run() {
 
     app.post("/volunteer-request", async (req, res) => {
       const volunteerInfo = req.body;
-      console.log("volunter infoo===>", volunteerInfo)
       const { volunteer, postId } = volunteerInfo;
-      const {volunteerEmail} = volunteer
+      const { volunteerEmail } = volunteer;
       try {
         const query = { "volunteer.volunteerEmail": volunteerEmail, postId };
-        console.log("volunteer? ==>", volunteerEmail, postId)
         const alreadyExist = await volunteerRequestsCollection.findOne(query);
-        console.log("If already exist-->", alreadyExist);
 
         if (alreadyExist) {
           return res
